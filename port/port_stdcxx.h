@@ -122,11 +122,11 @@ inline bool Snappy_Uncompress(const char* input, size_t length, char* output) {
 #endif  // HAVE_SNAPPY
 }
 
-inline bool GetHeapProfile(void (*func)(void*, const char*, int), void* arg) {
+inline bool GetHeapProfile(void (* /*func*/)(void*, const char*, int), void* /*arg*/) {
   return false;
 }
 
-inline uint32_t AcceleratedCRC32C(uint32_t crc, const char* buf, size_t size) {
+inline uint32_t AcceleratedCRC32C(uint32_t /*crc*/, const char* /*buf*/, size_t /*size*/) {
 #if HAVE_CRC32C
   return ::crc32c::Extend(crc, reinterpret_cast<const uint8_t*>(buf), size);
 #else

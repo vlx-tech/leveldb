@@ -49,25 +49,25 @@ char* EncodeVarint32(char* dst, uint32_t v) {
   unsigned char* ptr = reinterpret_cast<unsigned char*>(dst);
   static const int B = 128;
   if (v < (1<<7)) {
-    *(ptr++) = v;
+    *(ptr++) = (unsigned char)(v);
   } else if (v < (1<<14)) {
-    *(ptr++) = v | B;
-    *(ptr++) = v>>7;
+    *(ptr++) = (unsigned char)(v | B);
+    *(ptr++) = (unsigned char)(v>>7);
   } else if (v < (1<<21)) {
-    *(ptr++) = v | B;
-    *(ptr++) = (v>>7) | B;
-    *(ptr++) = v>>14;
+    *(ptr++) = (unsigned char)(v | B);
+    *(ptr++) = (unsigned char)((v>>7) | B);
+    *(ptr++) = (unsigned char)(v>>14);
   } else if (v < (1<<28)) {
-    *(ptr++) = v | B;
-    *(ptr++) = (v>>7) | B;
-    *(ptr++) = (v>>14) | B;
-    *(ptr++) = v>>21;
+    *(ptr++) = (unsigned char)(v | B);
+    *(ptr++) = (unsigned char)((v>>7) | B);
+    *(ptr++) = (unsigned char)((v>>14) | B);
+    *(ptr++) = (unsigned char)(v>>21);
   } else {
-    *(ptr++) = v | B;
-    *(ptr++) = (v>>7) | B;
-    *(ptr++) = (v>>14) | B;
-    *(ptr++) = (v>>21) | B;
-    *(ptr++) = v>>28;
+    *(ptr++) = (unsigned char)(v | B);
+    *(ptr++) = (unsigned char)((v>>7) | B);
+    *(ptr++) = (unsigned char)((v>>14) | B);
+    *(ptr++) = (unsigned char)((v>>21) | B);
+    *(ptr++) = (unsigned char)(v>>28);
   }
   return reinterpret_cast<char*>(ptr);
 }
@@ -96,7 +96,7 @@ void PutVarint64(std::string* dst, uint64_t v) {
 }
 
 void PutLengthPrefixedSlice(std::string* dst, const Slice& value) {
-  PutVarint32(dst, value.size());
+  PutVarint32(dst, (uint32_t)value.size());
   dst->append(value.data(), value.size());
 }
 

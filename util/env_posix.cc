@@ -114,7 +114,7 @@ class PosixSequentialFile: public SequentialFile {
   virtual Status Read(size_t n, Slice* result, char* scratch) {
     Status s;
     while (true) {
-      ssize_t r = read(fd_, scratch, n);
+      intptr_t r = read(fd_, scratch, n);
       if (r < 0) {
         if (errno == EINTR) {
           continue;  // Retry
@@ -173,7 +173,7 @@ class PosixRandomAccessFile: public RandomAccessFile {
     }
 
     Status s;
-    ssize_t r = pread(fd, scratch, n, static_cast<off_t>(offset));
+    intptr_t r = pread(fd, scratch, n, static_cast<off_t>(offset));
     *result = Slice(scratch, (r < 0) ? 0 : r);
     if (r < 0) {
       // An error: return a non-ok status
@@ -334,7 +334,7 @@ class PosixWritableFile : public WritableFile {
 
   Status WriteRaw(const char* p, size_t n) {
     while (n > 0) {
-      ssize_t r = write(fd_, p, n);
+      intptr_t r = write(fd_, p, n);
       if (r < 0) {
         if (errno == EINTR) {
           continue;  // Retry

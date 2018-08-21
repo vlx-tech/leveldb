@@ -181,7 +181,7 @@ void TableBuilder::WriteRawBlock(const Slice& block_contents,
   r->status = r->file->Append(block_contents);
   if (r->status.ok()) {
     char trailer[kBlockTrailerSize];
-    trailer[0] = type;
+    trailer[0] = (char)type;
     uint32_t crc = crc32c::Value(block_contents.data(), block_contents.size());
     crc = crc32c::Extend(crc, trailer, 1);  // Extend crc to cover block type
     EncodeFixed32(trailer+1, crc32c::Mask(crc));

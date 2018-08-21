@@ -1064,7 +1064,7 @@ struct IterState {
       : mu(mutex), version(version), mem(mem), imm(imm) { }
 };
 
-static void CleanupIteratorState(void* arg1, void* arg2) {
+static void CleanupIteratorState(void* arg1, void* /*arg2*/) {
   IterState* state = reinterpret_cast<IterState*>(arg1);
   state->mu->Lock();
   state->mem->Unref();
@@ -1092,7 +1092,7 @@ Iterator* DBImpl::NewInternalIterator(const ReadOptions& options,
   }
   versions_->current()->AddIterators(options, &list);
   Iterator* internal_iter =
-      NewMergingIterator(&internal_comparator_, &list[0], list.size());
+      NewMergingIterator(&internal_comparator_, &list[0], (int)list.size());
   versions_->current()->Ref();
 
   IterState* cleanup = new IterState(&mutex_, mem_, imm_, versions_->current());

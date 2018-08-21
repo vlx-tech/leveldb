@@ -37,7 +37,7 @@ static int64_t ExpandedCompactionByteSizeLimit(const Options* options) {
   return 25 * TargetFileSize(options);
 }
 
-static double MaxBytesForLevel(const Options* options, int level) {
+static double MaxBytesForLevel(const Options* /*options*/, int level) {
   // Note: the result for level zero is not really used since we set
   // the level-0 compaction threshold based on number of files.
 
@@ -50,7 +50,7 @@ static double MaxBytesForLevel(const Options* options, int level) {
   return result;
 }
 
-static uint64_t MaxFileSizeForLevel(const Options* options, int level) {
+static uint64_t MaxFileSizeForLevel(const Options* options, int /*level*/) {
   // We could vary per level to reduce number of files?
   return TargetFileSize(options);
 }
@@ -87,7 +87,7 @@ int FindFile(const InternalKeyComparator& icmp,
              const std::vector<FileMetaData*>& files,
              const Slice& key) {
   uint32_t left = 0;
-  uint32_t right = files.size();
+  uint32_t right = (uint32_t)files.size();
   while (left < right) {
     uint32_t mid = (left + right) / 2;
     const FileMetaData* f = files[mid];
@@ -166,7 +166,7 @@ class Version::LevelFileNumIterator : public Iterator {
                        const std::vector<FileMetaData*>* flist)
       : icmp_(icmp),
         flist_(flist),
-        index_(flist->size()) {        // Marks as invalid
+        index_((uint32_t)flist->size()) {        // Marks as invalid
   }
   virtual bool Valid() const {
     return index_ < flist_->size();
@@ -176,7 +176,7 @@ class Version::LevelFileNumIterator : public Iterator {
   }
   virtual void SeekToFirst() { index_ = 0; }
   virtual void SeekToLast() {
-    index_ = flist_->empty() ? 0 : flist_->size() - 1;
+    index_ = flist_->empty() ? 0 : (uint32_t)flist_->size() - 1;
   }
   virtual void Next() {
     assert(Valid());
@@ -185,7 +185,7 @@ class Version::LevelFileNumIterator : public Iterator {
   virtual void Prev() {
     assert(Valid());
     if (index_ == 0) {
-      index_ = flist_->size();  // Marks as invalid
+      index_ = (uint32_t)flist_->size();  // Marks as invalid
     } else {
       index_--;
     }
@@ -700,7 +700,7 @@ class VersionSet::Builder {
       // same as the compaction of 40KB of data.  We are a little
       // conservative and allow approximately one seek for every 16KB
       // of data before triggering a compaction.
-      f->allowed_seeks = (f->file_size / 16384);
+      f->allowed_seeks = (uint32_t)(f->file_size / 16384);
       if (f->allowed_seeks < 100) f->allowed_seeks = 100;
 
       levels_[level].deleted_files.erase(f->number);
@@ -906,7 +906,7 @@ Status VersionSet::LogAndApply(VersionEdit* edit, port::Mutex* mu) {
 Status VersionSet::Recover(bool *save_manifest) {
   struct LogReporter : public log::Reader::Reporter {
     Status* status;
-    virtual void Corruption(size_t bytes, const Status& s) {
+    virtual void Corruption(size_t /*bytes*/, const Status& s) {
       if (this->status->ok()) *this->status = s;
     }
   };
@@ -1036,7 +1036,7 @@ bool VersionSet::ReuseManifest(const std::string& dscname,
   }
   FileType manifest_type;
   uint64_t manifest_number;
-  uint64_t manifest_size;
+  uint64_t manifest_size=0;
   if (!ParseFileName(dscbase, &manifest_number, &manifest_type) ||
       manifest_type != kDescriptorFile ||
       !env_->GetFileSize(dscname, &manifest_size).ok() ||
@@ -1137,7 +1137,7 @@ Status VersionSet::WriteSnapshot(log::Writer* log) {
 int VersionSet::NumLevelFiles(int level) const {
   assert(level >= 0);
   assert(level < config::kNumLevels);
-  return current_->files_[level].size();
+  return (int)current_->files_[level].size();
 }
 
 const char* VersionSet::LevelSummary(LevelSummaryStorage* scratch) const {
@@ -1268,7 +1268,7 @@ Iterator* VersionSet::MakeInputIterator(Compaction* c) {
   // Level-0 files have to be merged together.  For other levels,
   // we will make a concatenating iterator per level.
   // TODO(opt): use concatenating iterator for level-0 if there is no overlap
-  const int space = (c->level() == 0 ? c->inputs_[0].size() + 1 : 2);
+  const int space = (c->level() == 0 ? (int)c->inputs_[0].size() + 1 : 2);
   Iterator** list = new Iterator*[space];
   int num = 0;
   for (int which = 0; which < 2; which++) {
